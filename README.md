@@ -1,4 +1,7 @@
 Comp584 Final Project:
+
+
+
 As primary assignment for this class you will build an advanced Web application. The required components of the applications are the following:
 
 Single Page Application (SPA) - this is a "must" for C or above!
