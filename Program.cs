@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using MySql.EntityFrameworkCore.Extensions; // needed for UseMySQL
-using Comp584ServerFinal.Data.Models;   // or .Data, depending on the file
-
+using Comp584ServerFinal.Data.Models;   // adjust namespace to your DbContext
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,10 +19,13 @@ builder.Services.AddCors(opts =>
         .AllowAnyMethod());
 });
 
-// DbContext (Oracle provider)
+// DbContext (Pomelo provider)
 var conn = builder.Configuration.GetConnectionString("MySql");
 builder.Services.AddDbContext<Comp584DbContext>(options =>
-    options.UseMySQL(conn)); // UseMySQL (Oracle provider)
+    options.UseMySql(
+        conn,
+        new MySqlServerVersion(new Version(8, 0, 36)) // match your MySQL server version
+    ));
 
 var app = builder.Build();
 
