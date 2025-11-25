@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Comp584ServerFinal.Data.Models;   // adjust namespace to your DbContext
+using Comp584ServerFinal.Data.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,16 +7,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Ability to use Controllers
+// Controllers
 builder.Services.AddControllers();
 
-// CORS for Angular dev server
-builder.Services.AddCors(opts =>
+// CORS setup (Angular dev server + Swagger browser calls)
+builder.Services.AddCors(options =>
 {
-    opts.AddPolicy("NgDev", p => p
-        .WithOrigins("http://localhost:4200")
-        .AllowAnyHeader()
-        .AllowAnyMethod());
+    options.AddPolicy("NgDev", policy =>
+        policy.WithOrigins("http://localhost:4200")   // Angular dev server
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+
+    options.AddPolicy("AllowAll", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod());
 });
 
 // DbContext (Pomelo provider)
@@ -29,23 +34,23 @@ builder.Services.AddDbContext<Comp584DbContext>(options =>
 
 var app = builder.Build();
 
-// HTTPS first 
+// HTTPS redirection
 app.UseHttpsRedirection();
 
-// Use Swagger
+// Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// CORS before MapControllers
+// Apply CORS (choose "NgDev" for Angular, or "AllowAll" for dev/testing)
 app.UseCors("NgDev");
 
-// Auth/Authorization (only if you’ve configured it)
+// Authorization (optional, if you add auth later)
 app.UseAuthorization();
 
 // Controllers
 app.MapControllers();
 
-// Simple health checks
+// Health checks
 app.MapGet("/", () => "Hello World!");
 app.MapGet("/db-ping", async (Comp584DbContext db) =>
 {
