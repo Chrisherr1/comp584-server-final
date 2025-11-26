@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Comp584ServerFinal.Data.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Comp584ServerFinal.Controllers
 {
@@ -15,6 +17,8 @@ namespace Comp584ServerFinal.Controllers
             _context = context;
         }
 
+        // Only Admin can grab all the users in the database 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
@@ -24,6 +28,8 @@ namespace Comp584ServerFinal.Controllers
                 .ToListAsync();
         }
 
+        // Users can view themselves and admin can view anyone
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
@@ -33,9 +39,18 @@ namespace Comp584ServerFinal.Controllers
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null) return NotFound();
+
+            var username = User.Identity?.Name;
+            var role = User.FindFirstValue(ClaimTypes.Role);
+
+            if (user.Username != username && role != "Admin")
+                return Forbid();
+
             return user;
         }
 
+        // Admin is the only one that can create users outright without login
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser(User user)
         {
@@ -44,20 +59,43 @@ namespace Comp584ServerFinal.Controllers
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
 
+        // Users can update themselves but the Admin can update ANYONE
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, User user)
         {
             if (id != user.Id) return BadRequest();
-            _context.Entry(user).State = EntityState.Modified;
+
+            var existingUser = await _context.Users.FindAsync(id);
+            if (existingUser == null) return NotFound();
+
+            var username = User.Identity?.Name;
+            var role = User.FindFirstValue(ClaimTypes.Role);
+
+            if (existingUser.Username != username && role != "Admin")
+                return Forbid();
+
+            existingUser.Email = user.Email;
+            existingUser.Username = user.Username;
+
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
+        // Users can delete themselves and Admin can delete ANYONE
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null) return NotFound();
+
+            var username = User.Identity?.Name;
+            var role = User.FindFirstValue(ClaimTypes.Role);
+
+            if (user.Username != username && role != "Admin")
+                return Forbid();
+
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
             return NoContent();
