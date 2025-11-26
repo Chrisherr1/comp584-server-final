@@ -1,0 +1,42 @@
+Comp584ServerFinal/
+├── appsettings.json                  // Global configuration: DB connection string, JWT secret, logging
+├── appsettings.Development.json      // Overrides for local development (e.g., local DB, debug settings)
+
+├── Data/
+│   ├── Comp584DbContext.cs           // EF Core DbContext: defines DbSets for Users, Posts, Comments
+│   └── Models/
+│       ├── User.cs                   // User entity: Username, Email, PasswordHash, Role, navigation to Posts/Comments
+│       ├── Post.cs                   // Post entity: Title, Content, Author, navigation to Comments
+│       └── Comment.cs                // Comment entity: Content, Author, navigation to Post
+
+├── DTO/
+│   ├── LoginRequest.cs               // DTO for login: carries Username + Password
+│   ├── RegisterRequest.cs            // DTO for registration: carries Username + Email + Password
+│   ├── PostDTO.cs                    // DTO for shaping Post responses: exposes Id, Title, Content, AuthorUsername, Comments
+│   └── CommentDTO.cs                 // DTO for shaping Comment responses: exposes Id, Content, AuthorUsername, PostId
+
+├── Controllers/
+│   ├── AuthController.cs             // Handles authentication:
+│   │                                 //   - POST /api/auth/login → issues JWT with claims
+│   │                                 //   - POST /api/auth/register → creates new user with hashed password
+│   │
+│   ├── UsersController.cs            // Manages users:
+│   │                                 //   - GET /api/users → Admin only, list all users
+│   │                                 //   - GET /api/users/{id} → User can view self, Admin can view anyone
+│   │                                 //   - POST /api/users → Admin only, create user directly
+│   │                                 //   - PUT /api/users/{id} → User updates self, Admin updates anyone
+│   │                                 //   - DELETE /api/users/{id} → User deletes self, Admin deletes anyone
+│   │
+│   ├── PostsController.cs            // Manages posts:
+│   │                                 //   - GET /api/posts → Anyone can view all posts
+│   │                                 //   - GET /api/posts/{id} → Anyone can view a specific post
+│   │                                 //   - POST /api/posts → Logged-in users create posts
+│   │                                 //   - PUT /api/posts/{id} → Author or Admin can update
+│   │                                 //   - DELETE /api/posts/{id} → Author or Admin can delete
+│   │
+│   └── CommentsController.cs         // Manages comments:
+│                                     //   - GET /api/comments → Anyone can view all comments
+│                                     //   - GET /api/comments/{id} → Anyone can view a specific comment
+│                                     //   - POST /api/comments → Logged-in users create comments
+│                                     //   - PUT /api/comments/{id} → Author, Admin, or Moderator can update
+│                                     //   - DELETE /api/comments/{id} → Author, Admin, or Moderator can delete
