@@ -12,9 +12,7 @@ public partial class Comp584DbContext : DbContext
     }
 
     public virtual DbSet<Comment> Comments { get; set; }
-
     public virtual DbSet<Post> Posts { get; set; }
-
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -24,7 +22,6 @@ public partial class Comp584DbContext : DbContext
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
             entity.HasIndex(e => e.PostId, "FK_Comments_Posts");
-
             entity.HasIndex(e => e.UserId, "FK_Comments_Users");
 
             entity.Property(e => e.Content).HasColumnType("text");
@@ -73,6 +70,18 @@ public partial class Comp584DbContext : DbContext
                 .HasMaxLength(50)
                 .HasDefaultValue("User");
         });
+
+        // ✅ Admin seeding with fixed hash string
+        modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                Id = 1,
+                Username = "admin",
+                Email = "admin@example.com",
+                PasswordHash = "$2a$12$NTr2G/OyFeRyd4fCVRLwW.ysMBEmuFEN6MgRELzRb46M1zwovKXpW", // Hash is via bcryt
+                Role = "Admin"
+            }
+        );
 
         OnModelCreatingPartial(modelBuilder);
     }

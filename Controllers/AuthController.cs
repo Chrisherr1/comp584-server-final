@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Comp584ServerFinal.Data;
 using Comp584ServerFinal.Data.Models;
 using Comp584ServerFinal.DTO;
-
+using Microsoft.AspNetCore.Authorization;
 
 namespace Comp584ServerFinal.Controllers
 {
@@ -17,11 +17,14 @@ namespace Comp584ServerFinal.Controllers
     public class AuthController : ControllerBase
     {
         private readonly Comp584DbContext _db;
+        private readonly IConfiguration _config;
 
-        public AuthController(Comp584DbContext db)
+        public AuthController(Comp584DbContext db, IConfiguration config)
         {
             _db = db;
+            _config = config;
         }
+
         [AllowAnonymous]
         [HttpPost("login")]
         public IActionResult Login(LoginRequest request)
@@ -35,20 +38,24 @@ namespace Comp584ServerFinal.Controllers
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, user.Role)
             };
+            //Jwt key is HS256 Completely different from password encryption
+            var jwtKey = _config["Jwt:Key"];
+            if (string.IsNullOrEmpty(jwtKey))
+                throw new InvalidOperationException("JWT Key is missing from configuration.");
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SuperSecretKey12345"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: "yourapp",
-                audience: "yourapp",
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds);
 
             return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
         }
-        
+
         [AllowAnonymous]
         [HttpPost("register")]
         public IActionResult Register(RegisterRequest request)
@@ -56,7 +63,7 @@ namespace Comp584ServerFinal.Controllers
             if (_db.Users.Any(u => u.Username == request.Username))
                 return BadRequest("Username already taken.");
 
-            //Hashes password using BCrypt
+            // Hashes password using BCrypt
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
             var newUser = new User

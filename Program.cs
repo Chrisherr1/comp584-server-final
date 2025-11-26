@@ -3,12 +3,41 @@ using Comp584ServerFinal.Data.Models;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
+using Microsoft.OpenApi.Models; // ✅ needed for Swagger security definition
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Swagger Services
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // ✅ Add JWT Bearer security definition so Swagger knows how to send tokens
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer' followed by your JWT token.\nExample: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+    });
+
+    // ✅ Apply security requirement globally so all endpoints can use it
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 // Controllers
 builder.Services.AddControllers();
@@ -28,7 +57,7 @@ builder.Services.AddCors(options =>
 });
 
 // validates incoming JWTs by checking their issuer,audience and signiture 
-builder.Services.AddAuthentication("Bearer")
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -37,10 +66,10 @@ builder.Services.AddAuthentication("Bearer")
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "yourapp",
-            ValidAudience = "yourapp",
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes("SuperSecretKey12345"))
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)) // ✅ now reading from appsettings.json
         };
     });
 
@@ -65,8 +94,8 @@ app.UseSwaggerUI();
 app.UseCors("NgDev");
 
 // enables Authentication middleware
-app.UseAuthorization();
-// enables Authroization middleware
+app.UseAuthentication();   // ✅ must come before authorization
+// enables Authorization middleware
 app.UseAuthorization();
 
 // Controllers
