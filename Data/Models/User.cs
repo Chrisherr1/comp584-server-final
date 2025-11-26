@@ -9,7 +9,11 @@ public partial class User
 
     public string Username { get; set; } = null!;
 
+    public string Email { get; set; } = null!;   // optional but useful for login/recovery
+
     public string PasswordHash { get; set; } = null!;
+
+    public string Role {get; set;} = "User";
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 

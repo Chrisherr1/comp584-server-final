@@ -68,6 +68,10 @@ public partial class Comp584DbContext : DbContext
             entity.HasIndex(e => e.Username, "Username").IsUnique();
 
             entity.Property(e => e.PasswordHash).HasColumnType("text");
+
+            entity.Property(e => e.Role)
+                .HasMaxLength(50)
+                .HasDefaultValue("User");
         });
 
         OnModelCreatingPartial(modelBuilder);

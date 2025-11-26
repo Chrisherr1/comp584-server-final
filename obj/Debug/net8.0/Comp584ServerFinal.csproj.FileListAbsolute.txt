@@ -233,3 +233,12 @@
 /Users/christianherrera/Documents/Projects/Comp584/Comp584ServerFinal/obj/Debug/net8.0/Comp584ServerFinal.pdb
 /Users/christianherrera/Documents/Projects/Comp584/Comp584ServerFinal/obj/Debug/net8.0/Comp584ServerFinal.genruntimeconfig.cache
 /Users/christianherrera/Documents/Projects/Comp584/Comp584ServerFinal/obj/Debug/net8.0/ref/Comp584ServerFinal.dll
+/Users/christianherrera/Documents/Projects/Comp584/Comp584ServerFinal/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/Users/christianherrera/Documents/Projects/Comp584/Comp584ServerFinal/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/Users/christianherrera/Documents/Projects/Comp584/Comp584ServerFinal/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/Users/christianherrera/Documents/Projects/Comp584/Comp584ServerFinal/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll
+/Users/christianherrera/Documents/Projects/Comp584/Comp584ServerFinal/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.dll
+/Users/christianherrera/Documents/Projects/Comp584/Comp584ServerFinal/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/Users/christianherrera/Documents/Projects/Comp584/Comp584ServerFinal/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
+/Users/christianherrera/Documents/Projects/Comp584/Comp584ServerFinal/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
+/Users/christianherrera/Documents/Projects/Comp584/Comp584ServerFinal/bin/Debug/net8.0/BCrypt.Net-Next.dll
