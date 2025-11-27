@@ -29,16 +29,18 @@ namespace Comp584ServerFinal.Controllers
         [HttpPost("login")]
         public IActionResult Login(LoginRequest request)
         {
-            var user = _db.Users.SingleOrDefault(u => u.Username == request.Username);
+            // ✅ Look up user by Email instead of Username
+            var user = _db.Users.SingleOrDefault(u => u.Email == request.Email);
             if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
                 return Unauthorized();
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, user.Username),
+                // ✅ Use Email as the identity claim
+                new Claim(ClaimTypes.Name, user.Email),
                 new Claim(ClaimTypes.Role, user.Role)
             };
-            //Jwt key is HS256 Completely different from password encryption
+
             var jwtKey = _config["Jwt:Key"];
             if (string.IsNullOrEmpty(jwtKey))
                 throw new InvalidOperationException("JWT Key is missing from configuration.");
@@ -60,10 +62,10 @@ namespace Comp584ServerFinal.Controllers
         [HttpPost("register")]
         public IActionResult Register(RegisterRequest request)
         {
-            if (_db.Users.Any(u => u.Username == request.Username))
-                return BadRequest("Username already taken.");
+            if (_db.Users.Any(u => u.Email == request.Email))
+                return BadRequest("Email already taken.");
 
-            // Hashes password using BCrypt
+            // Hash password using BCrypt
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
             var newUser = new User
