@@ -3,7 +3,7 @@ using Comp584ServerFinal.Data.Models;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
-using Microsoft.OpenApi.Models; // ✅ needed for Swagger security definition
+using Microsoft.OpenApi.Models; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    // ✅ Add JWT Bearer security definition so Swagger knows how to send tokens
+    // Add JWT Bearer security definition so Swagger knows how to send tokens
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -22,7 +22,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Enter 'Bearer' followed by your JWT token.\nExample: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6..."
     });
 
-    // ✅ Apply security requirement globally so all endpoints can use it
+    // Apply security requirement globally so all endpoints can use it
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -40,7 +40,10 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+.AddJsonOptions(options => {
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
 
 // CORS setup (Angular dev server + Swagger browser calls)
 builder.Services.AddCors(options =>
@@ -69,7 +72,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)) // ✅ now reading from appsettings.json
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)) // now reading from appsettings.json
         };
     });
 
@@ -94,7 +97,7 @@ app.UseSwaggerUI();
 app.UseCors("NgDev");
 
 // enables Authentication middleware
-app.UseAuthentication();   // ✅ must come before authorization
+app.UseAuthentication();   // must come before authorization
 // enables Authorization middleware
 app.UseAuthorization();
 
